@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+
+<!-- the "head" is where you can add some scripts and header info. here we will just import some jquery scripts (equivalent to adding libraries in python)-->
+<head>
+	<!-- jQuery -->
+	<!-- These are scripts we're importing for Jquery functions, used in the drag-rate task and some object references -->
+	<script type="text/javascript" src="https://code.jquery.com/jquery.min.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+        
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+	<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+	
+	<!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+  	<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-analytics.js"></script>
+
+  	<!-- Add Firebase products that you want to use -->
+  	<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+</head>
+        
+<style>
+/* inside the style tag is where we put our CSS */ 
+
+/* body text styling*/ 
+	body {
+		font-size: 14pt;
+		font-family: Arial, Helvetica;
+		}
+
+/* styling options for the labels on all radio buttons (radio buttons have "labels", these next three are super general CSS styling of different aspects of radio buttons and their associated button labels) */
+	#radio label {
+	float: right;
+    display: inline
+	}
+	
+	radio {
+    	display: inline;
+	}
+	
+	#radio input {
+		width: auto;
+		margin-left: 3em;
+	}
+	
+/* styling actual instructions for dragrate task */
+	#instructions_dragrate {
+		width: 600px;
+		margin: 20% auto;
+		text-align: center;
+	}
+
+/* drag rate task: styling our homemade button that continues to the task from the instructions */
+	#startbutton_dragrate {
+		width: 110px;
+		text-align: center;
+		font-color: white;
+		border: 4px outset gray;
+		background: gray;
+		padding: 3px;
+		margin: 0 auto;
+	}
+
+/* more styling for drag rate task start button -- color change when hovering over the button */
+	#startbutton_dragrate:hover {
+		border: 4px inset gray;
+	}
+	
+/* more styling for drag rate task start button -- text */
+	#startExperiment_dragrate {
+		color: white;
+		text-decoration: none;
+
+	}
+
+/* more styling for drag rate task start button text -- color change when hovering over the button for text too */
+	#startExperiment_dragrate:hover {
+		color: blue;
+	}
+	
+	
+/* hiding the dragrate task until we want to show it */
+	#dragrate_wholepage {
+	display:none;}
+	
+/* styling the box that holds the "scale" for our drag-rate task (is a pre-made image)*/
+	#container {
+      background-image: url('https://pramodturk1.s3.amazonaws.com/scale_images/scale_bg.png');
+      background-size: 100% 600px;
+      background-repeat: no-repeat;
+      width: 100%;
+      height: 600px;
+      align-items: right;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 7px;
+      touch-action: none;
+      position: relative;
+    }
+    
+/* making sure the image of the container is formatted to fit */
+    #container_image {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* styling draggable item class (for drag rate task) */
+    .drag {
+      position: absolute;
+  	  right: 40px;
+  	  top: 40px;
+      width: 150px;
+      height: 150px;
+      border: 1px solid red;
+      touch-action: none;
+      user-select: none;
+      
+    }
+    
+    /* setting vertical offsets in original placement of first two draggable items so it looks like a stack */
+    #dragitem1 {
+      top: 50px;
+    }
+    
+    #dragitem2 {
+      top: 45px;
+    }
+    
+    /* setting up a countdown object to say how many items are left to drag */
+    #countdown {
+      position: absolute;
+  	  right: 40px;
+  	  top: 250px;
+    }
+    
+    /* styling draggable items while they're actually being dragged */
+    .drag:active {
+      border: 1px solid blue;
+    }
+    
+    /* styling draggable items when they are hovered over w/ cursor */
+	.drag:hover {
+      cursor: pointer;
+      border-width: 3px;
+    }
+    
+
+/* "continue" button to end the drag-rate task when complete */
+    #enddrag {
+      position: absolute;
+  	  right: 40px;
+  	  top: 375px;
+  	  background: LightGreen;
+    }
+    
+    /* the button to end the drag-rate task and continue to labeling is disabled until all draggable items have been moved at least once -- we set using this: */
+	#enddrag[disabled]
+	{
+	 background: LightGrey;
+	 color: grey;
+	}
+
+
+/* styling actual instructions for labeling task */
+	#instructions_label {
+		display: none;
+		width: 600px;
+		margin: 20% auto;
+		text-align: center;
+	}
+
+/* styling actual instructions for label task, setting to invisible until we want to show it */
+	#startbutton_label {
+		width: 110px;
+		text-align: center;
+		font-color: white;
+		border: 4px outset gray;
+		background: gray;
+		padding: 3px;
+		margin: 0 auto;
+	}
+
+/* same hover stuff and button styling as before */
+	#startbutton_label:hover {
+		border: 4px inset gray;
+	}
+
+	#startExperiment_label {
+		color: white;
+		text-decoration: none;
+
+	}
+
+	#startExperiment_label:hover {
+		color: blue;
+	}
+	
+	
+/* overall placement of the entire trial object class in the labeling task, set display to none until we want to show the trial */
+	.trialDiv {
+		padding: 10% 35%;
+		display: none;
+	}
+
+/* set size of trial image class for labeling task */
+	.trialImg {
+		width: 4in
+		height: 4in
+	}
+	
+	
+/* if users are on an unsupported device, there is a page that will pop up asking them to "return" or quit the HIT. This sets it to hidden unless we choose to show it */
+	#RETURNHIT_page {
+   		display:none;}
+
+
+
+	#turker_unique_sequence_page {
+		display: none;
+		width: 700px;
+		margin: 20% auto;
+		text-align: center;
+	}
+
+
+</style>
+
+
+<!-- now we enter the body of the actual experiment -->
+<body id = "body" style = "text-align:center;">  
+
+
+<!-- this is the page that will show up if isMobileTablet() returns true (line 348), asking worker to "return" or quit the HIT -->
+<div id="RETURNHIT_page">
+	<p style="font-size:50px;color:red;"> PLEASE RETURN THE HIT! <br><br> This HIT requires laptops or desktops only! Thanks anyway! </p>
+</div>
+
+	<!-- 	~~~EXPERIMENTS~~~	 -->
+	
+		<!-- 	~~~drag rate task~~~	 -->
+	
+		<div id="instructions_dragrate" >
+			In this first task (of two), you will be dragging and dropping 10 images of objects using your mouse to place the objects on a <b>horizontal</b> scale, ranging from lightest to heaviest, according to the marker images and their weights, shown under the "drop zone."<br />
+			(It does not matter if images are dragged on top of each other, and the vertical position doesn't matter.)
+			<br><br>
+			Once you have moved all of the images from the stack onto the "scale" you will be able to click the "Done!" button on the bottom (below the scale) to continue to the next task (labeling each object and guessing its weight).
+			<br><br>
+			<p>In order to get credit for this HIT, you must fully complete the tasks. For example, if in task #2 you input an estimated weight of 0 or a blank/meaningless label for many items, your work may be rejected. It is okay if you do not think your estimates or labels are good, please just try your best.</p>
+			<br>
+			Please keep this tab in <b>full screen</b>, but please do not open a new tab (this may affect the submit button)!
+			
+			<p style="color:red;"><b>DO NOT CLOSE OR REFRESH THE PAGE BEFORE YOU HIT "SUBMIT" AT THE END OF BOTH TASKS </b></p>
+			
+			<!-- the start button goes *inside* the instructions object -->
+			<div id="startbutton_dragrate">
+				<!-- note that this button is actually a link to the current page (denoted by href="#"), a trick from Tim Brady -->
+				<p><a href="#" id="startExperiment_dragrate">Start Task #1 </a></p>
+			</div>
+			
+		</div>
+
+
+
+	
+	<div id="dragrate_wholepage">
+
+		<!-- class must be "drop" ; this is the whole box for drag and drop, which contains the draggable items-->
+		<div id="container" class="drop">
+		  <div>
+		  <!-- note that this has been abbreviated to 10 items/trials ; 
+		  note that all 10 items have their own very repetetive lines to create/reference them. 
+		  This is because they NEED to have unique "id" values, which unfortunately I haven't taken the time to figure out making in a javascript loop. 
+		  For large numbers of objects like this, I use a python or matlab script to generate a textfile of all the objects in a loop, then copy-paste to my html script.. stupid but it works -->
+			<img src="" id="dragitem1" class="drag">
+			<img src="" id="dragitem2" class="drag">
+			<img src="" id="dragitem3" class="drag">
+			<img src="" id="dragitem4" class="drag">
+			<img src="" id="dragitem5" class="drag">
+			<img src="" id="dragitem6" class="drag">
+			<img src="" id="dragitem7" class="drag">
+			<img src="" id="dragitem8" class="drag">
+			<img src="" id="dragitem9" class="drag">
+			<img src="" id="dragitem10" class="drag">
+
+			
+			<p id="countdown"></p>
+			<button type="button" class="endDragRate" id="enddrag" disabled >Done!</button>
+			
+		  </div>
+		</div>
+  
+  		<!-- OUTSIDE of the drag and drop container, we manually place the scale items to fit the container image. Also a bit hacky, but it took very little time to figure out what the "left" value should be to place them appropriately with the vertical lines in the scale 
+  		also note that the horizontal position of these items is based on %, which is % of the screen width, allowing it to scale w/ window resize ; width and height also set to "vw" units, which is based on the size of the current viewing window, which makes their sizes scalable too-->
+	  <img id="scale1" src="scale_images/scale_paperclip.png" style="width:10vw;height:13vw;position:fixed;left:4%">
+	   <img id="scale2" src="scale_images/scale_toaster.png" style="width:10vw;height:13vw;position:fixed;left: 27%">
+	   <img id="scale3" src="scale_images/scale_potatoes.png" style="width:10vw;height:13vw;position:fixed;left:52%">
+	   <img id="scale4" src="scale_images/scale_pomeranian.png" style="width:10vw;height:13vw;position:fixed;left:67%">
+	   <img id="scale5" src="scale_images/scale_milk.png" style="width:10vw;height:13vw;position:fixed;left:87%">
+   
+   <!-- below we have some hidden inputs that we change the value of in using javascript; hidden means the user never sees them, but as an inherent "input" class, they are automatically recorded by mturk when the HIT is submitted. 
+   This part logs the x-axis value, our measure of interest in the drag rate task-->
+	   <input type=hidden name="finalX_dragitem1" value="-99" id="finalX_dragitem1">
+	   <input type=hidden name="finalX_dragitem2" value="-99" id="finalX_dragitem2">
+		<input type=hidden name="finalX_dragitem3" value="-99" id="finalX_dragitem3">
+		<input type=hidden name="finalX_dragitem4" value="-99" id="finalX_dragitem4">
+		<input type=hidden name="finalX_dragitem5" value="-99" id="finalX_dragitem5">
+		<input type=hidden name="finalX_dragitem6" value="-99" id="finalX_dragitem6">
+		<input type=hidden name="finalX_dragitem7" value="-99" id="finalX_dragitem7">
+		<input type=hidden name="finalX_dragitem8" value="-99" id="finalX_dragitem8">
+		<input type=hidden name="finalX_dragitem9" value="-99" id="finalX_dragitem9">
+		<input type=hidden name="finalX_dragitem10" value="-99" id="finalX_dragitem10">
+		
+	<!-- same as above, but here we log the actual file name of the images, so we know which object is which (bc we shuffle the order between workers and need to keep track of each object across subjects)-->
+		<input type=hidden name="drag_actualIM1" value="-99" id="drag_actualIM1">
+		<input type=hidden name="drag_actualIM2" value="-99" id="drag_actualIM2">
+		<input type=hidden name="drag_actualIM3" value="-99" id="drag_actualIM3">
+		<input type=hidden name="drag_actualIM4" value="-99" id="drag_actualIM4">
+		<input type=hidden name="drag_actualIM5" value="-99" id="drag_actualIM5">
+		<input type=hidden name="drag_actualIM6" value="-99" id="drag_actualIM6">
+		<input type=hidden name="drag_actualIM7" value="-99" id="drag_actualIM7">
+		<input type=hidden name="drag_actualIM8" value="-99" id="drag_actualIM8">
+		<input type=hidden name="drag_actualIM9" value="-99" id="drag_actualIM9">
+		<input type=hidden name="drag_actualIM10" value="-99" id="drag_actualIM10">
+	   
+	   
+	   <br><br><br><br><br><br>
+	   
+   
+	</div>
+
+
+
+
+<script>
+
+// now we're in javascript mode using the script tag. I split the javascript to first and 2nd experiment chunks, 
+// so more javascript comes up in a 2nd script tag later 
+
+
+// will set the window into full screen (note that we are still in the "iframe" or tiny box limits of the mturk window, but this will make the entire mturk page as big as possible)
+var elem = document.documentElement;
+function openFullscreen() {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE/Edge */
+    elem.msRequestFullscreen();
+  }
+}
+
+
+// function to check whether user is on a smartphone/tablet or not
+function isMobileTablet(){
+    var check = false;
+    (function(a){
+        if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) 
+            var check = true;
+    })(navigator.userAgent||navigator.vendor||window.opera);
+    
+    if (check == true) {
+    // if they are on a tablet/smartphone, we will show the page that asks them to return or quit the HIT
+    	$('#RETURNHIT_page').show();
+    }
+    else {		
+    // else we show the drag-rate task
+    	$('#dragrate_wholepage').show();
+		openFullscreen()
+	}
+}
+
+
+// this will prepare the drag-rate task, hide the drag-rate instructions, and run the function above to either ask to return the HIT or actually show the drag-rate task
+	function startDragRate() {
+		loadDraggables();
+		$('#instructions_dragrate').hide();
+		isMobileTablet()
+	}
+
+
+	// general function to shuffle an array
+	function shuffle(array) {
+	  for (let i = array.length - 1; i > 0; i--) {
+		let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
+		[array[i], array[j]] = [array[j], array[i]];
+	  }
+	}
+
+
+	// function to get range (vector of range)
+	function rangevec(start, end) {
+	  return Array(end - start + 1).fill().map((_, idx) => start + idx)
+	}
+
+
+
+	// set some fixed variables
+	// **** NOTE: WE WILL CHANGE THIS PATH VARIABLE LATER TO AN AWS SERVER LOCATION
+	var path = "stimuli/";
+	n_images =10;
+	var all_ims = rangevec(1, n_images);
+	shuffle(all_ims);
+	
+	// loads the images for the drag_rate task, updates the hidden variables to the actual file name (to determine which stimulus is shown as which draggable item in task)
+	function loadDraggables() {
+		for (i = 1; i < n_images+1; i++) {
+		j = all_ims[i-1];
+		document.getElementById('dragitem'+i).src = path+j+'.png';
+		$('#drag_actualIM'+i).value = j;
+		}
+	}
+
+
+	// initialize some variables for determining how many of the draggable items have been dragged (we use this to only enable the "Done" button once all items have been dragged, prevents premature submission)
+	var hasMoved = new Array(n_images).fill(0);
+	var sum = 0;
+	
+	// update the countdown based on how many images are left
+	document.getElementById('countdown').innerHTML = (n_images - sum) + " images left";
+	
+	// create our draggable class 
+	$(".drag").draggable({
+		stack: ".drag"
+		});
+
+	// create our "droppable" class (draggable items while being moved become "droppables")
+	$(".drop").droppable({
+		drop: function(event, ui) {
+			var id = ui.draggable.attr("id");
+			// update the x-axis value 
+			document.getElementById('finalX_'+id).value = parseInt(document.getElementById(id).style.left.slice(0,-2));
+			var idVal = id.slice(8);
+			// update the array from 0 to 1 for the index of whatever draggable item has just been dragged/dropped
+			hasMoved[idVal-1] = 1;
+			// update the sum and counter so we know and the user knows how many items are left to drag/drop
+			var sum = hasMoved.reduce((a, b) => a + b, 0);
+			document.getElementById('countdown').innerHTML = (n_images - sum) + " images left";
+			// once all items have been moved, end the disabled feature (i.e., enable) the "Done" button
+			if (sum > (n_images-1)) {
+				document.getElementById('enddrag').disabled = false;
+			}
+		}
+		
+	});
+
+ // show the instructions for the next task and load the trials, hide this task
+	function showInstructions_label() {
+		window.picSize = 300;
+		loadTrials()
+		$('#dragrate_wholepage').hide()
+		$('#instructions_label').show();
+	}
+
+
+	
+
+
+
+
+</script>
+
+<!-- script has ended, we're back in html mode -->
+
+
+<!-- for the instructions and button below, same deal as before..-->
+		<!-- 	~~~label/estimation task~~~	 -->
+	
+		<div id="instructions_label" >
+			<p>Images of objects will show one at a time on the screen (and this will happen for 120 images). 
+			For each image, please provide a label for the object in the image in the first text box. <br><br>
+			
+			Below the label, please estimate the weight of the object, using the buttons beside the entry box to select whether answering in pounds or ounces (note, decimal values are OK). <br><br>
+			When you are done, <b>please click the "Submit" button to complete this HIT</b>. <br><br> 
+
+			<div id="startbutton_label">
+				<p><a href="#" id="startExperiment_label">Start Task #2 </a>
+				</p>
+			</div>
+		</div>
+	
+		<!-- now we'll go through each trial of the labeling task -->
+		<!-- note that, as before, we need unique IDs for every part of every trial, so I just use a script elsewhere to generate a text file in a loop over n trials ..
+		you could probably figure this out in javascript, but ... this was faster for me to figure out and deal with! 
+		I normally start w/ just a few trials anyway to make sure it works the way I want, then generate the txt file to copy-paste the rest of trials..
+		it works well for me, but some people find this annoying -->
+		<!-- 	ACTUAL TRIAL PRESENTATION 	 -->
+			<!-- trial 1 -->
+			<div id="trial1" class="trialDiv">
+			<!-- note we are in a "trialDiv" class for all pieces of the trial-->
+				<!-- first the stimulus -->
+				<img id="im1" src="" class="label_im">
+				<br><br><br>
+				<!-- now  textbox for subject to input label of object -->
+				<input type="text" id="label1" name="label1" placeholder="image label"  ><br><br>
+				<!-- a textbox for them to input the estimated weight as a number, minimum value 0-->
+				<p>enter estimated weight: </p> <input type="number" id="weight1" name="weight1" min="0"  >
+				<!-- options for the unit they're using in guessing weight-->
+				<input type="radio" class="wb" name="wb1" id="wb1_lb" value="1"  >lbs.
+				<input type="radio" class="wb" name="wb1" id="wb1_oz" value="2" >oz.
+				<input type="radio" class="wb" name="wb1" id="wb1_g" value="3" >g.
+
+				<br><br>
+				<!-- hidden input for which button was selected (see line 714 for code that updates this based on whether any button above was selected)-->
+				<input type="hidden" name="wb_sel1" value="-99" id="wb_sel1">
+				<!-- again, saving a hidden input for the actual file name of image presented in this trial -->
+				<input type="hidden" value="-99" id="label_actualIM1" name="label_actualIM1">
+				<!-- button to continue to next trial -->
+				<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 2 -->
+			<div id="trial2" class="trialDiv">
+			<img id="im2" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label2" name="label2" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight2" name="weight2" min="0"  >
+			<input type="radio" class="wb" name="wb2" id="wb2_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb2" id="wb2_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb2" id="wb2_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel2" value="-99" id="wb_sel2">
+			<input type="hidden" value="-99" id="label_actualIM2" name="label_actualIM2">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 3 -->
+			<div id="trial3" class="trialDiv">
+			<img id="im3" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label3" name="label3" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight3" name="weight3" min="0"  >
+			<input type="radio" class="wb" name="wb3" id="wb3_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb3" id="wb3_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb3" id="wb3_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel3" value="-99" id="wb_sel3">
+			<input type="hidden" value="-99" id="label_actualIM3" name="label_actualIM3">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 4 -->
+			<div id="trial4" class="trialDiv">
+			<img id="im4" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label4" name="label4" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight4" name="weight4" min="0"  >
+			<input type="radio" class="wb" name="wb4" id="wb4_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb4" id="wb4_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb4" id="wb4_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel4" value="-99" id="wb_sel4">
+			<input type="hidden" value="-99" id="label_actualIM4" name="label_actualIM4">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 5 -->
+			<div id="trial5" class="trialDiv">
+			<img id="im5" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label5" name="label5" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight5" name="weight5" min="0"  >
+			<input type="radio" class="wb" name="wb5" id="wb5_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb5" id="wb5_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb5" id="wb5_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel5" value="-99" id="wb_sel5">
+			<input type="hidden" value="-99" id="label_actualIM5" name="label_actualIM5">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 6 -->
+			<div id="trial6" class="trialDiv">
+			<img id="im6" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label6" name="label6" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight6" name="weight6" min="0"  >
+			<input type="radio" class="wb" name="wb6" id="wb6_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb6" id="wb6_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb6" id="wb6_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel6" value="-99" id="wb_sel6">
+			<input type="hidden" value="-99" id="label_actualIM6" name="label_actualIM6">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 7 -->
+			<div id="trial7" class="trialDiv">
+			<img id="im7" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label7" name="label7" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight7" name="weight7" min="0"  >
+			<input type="radio" class="wb" name="wb7" id="wb7_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb7" id="wb7_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb7" id="wb7_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel7" value="-99" id="wb_sel7">
+			<input type="hidden" value="-99" id="label_actualIM7" name="label_actualIM7">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 8 -->
+			<div id="trial8" class="trialDiv">
+			<img id="im8" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label8" name="label8" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight8" name="weight8" min="0"  >
+			<input type="radio" class="wb" name="wb8" id="wb8_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb8" id="wb8_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb8" id="wb8_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel8" value="-99" id="wb_sel8">
+			<input type="hidden" value="-99" id="label_actualIM8" name="label_actualIM8">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 9 -->
+			<div id="trial9" class="trialDiv">
+			<img id="im9" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label9" name="label9" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight9" name="weight9" min="0"  >
+			<input type="radio" class="wb" name="wb9" id="wb9_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb9" id="wb9_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb9" id="wb9_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel9" value="-99" id="wb_sel9">
+			<input type="hidden" value="-99" id="label_actualIM9" name="label_actualIM9">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+
+
+			<!-- trial 10 -->
+			<div id="trial10" class="trialDiv">
+			<img id="im10" src="" class="label_im">
+			<br><br><br>
+			<input type="text" id="label10" name="label10" placeholder="image label"  ><br><br>
+			<p>enter estimated weight: </p> <input type="number" id="weight10" name="weight10" min="0"  >
+			<input type="radio" class="wb" name="wb10" id="wb10_lb" value="1"  >lbs.
+			<input type="radio" class="wb" name="wb10" id="wb10_oz" value="2" >oz.
+			<input type="radio" class="wb" name="wb10" id="wb10_g" value="3" >g.
+
+			<br><br>
+			<input type="hidden" name="wb_sel10" value="-99" id="wb_sel10">
+			<input type="hidden" value="-99" id="label_actualIM10" name="label_actualIM10">
+			<button type="button" class="continueButton"> continue </button>
+			</div>
+			
+			<!-- this object is the "page" that gives subjects their UID to copy to the mturk page-->
+			<div id="turker_unique_sequence_page">
+				<h3> Thanks for participating! <h3>
+				<br><br><br>
+				<h2 style="color: red"><i><b>You must copy-paste the code below into the MTurk page to have your work count!</b></i></h2>
+				<br><br>
+				<!-- here we have an empty paragraph with an id value; we will use javascript to update what shows here 
+				so that we can generate the value uniquely for each time the page loads -->
+				<p id="actual_turker_unique_sequence"> </p>
+				<br><br><br>
+				<p> (Once you have successfully copied your code to the MTurk page, you can close this tab.) </p>
+			</div>
+
+
+<script>
+// back to script mode
+
+	
+	// set some fixed variables
+	// **** NOTE: WE WILL CHANGE THIS PATH VARIABLE LATER TO AN AWS SERVER LOCATION
+	var path = "stimuli/";
+	var nTrials=10;
+	var all_i = rangevec(1, nTrials);
+	shuffle(all_i);
+    // set the correct trial video paths in a loop
+    
+    function loadTrials() {
+		for (i = 1; i < nTrials+1; i++) {
+		j = all_i[i-1];
+		document.getElementById('im'+i).src = path+j+'.png';
+		$('#label_actualIM'+i).value = j;
+		document.getElementById('im'+i).height = window.picSize;
+		document.getElementById('im'+i).width = window.picSize;
+
+		}
+	}
+
+
+
+	// --- functions for stimulus presentation --- 
+	
+	// initialize variables
+	var curTrial=1;
+	var startTrialTime;
+
+	// function that actually shows the image and calls function to flip from stim to question
+	function showImage(whichImage) {
+		$('#trial' + whichImage).show();
+	}
+
+
+	// initial function that presents just the first trial by initializing then calling above general function, hides instructions  
+	function showFirstTrial() {
+		$('#instructions_label').hide();
+		showImage(1);
+	}
+	
+	// figure out if a button was clicked: returns true if a button w/ given ID has been selected
+	function isChecked(id){
+		return document.getElementById(id).checked; 
+    }
+
+	// function that switches to new trial after response is made for previous trial, or to submit button if all trials done
+	function continuePressed() {
+	// when continue button is pressed...		
+		// if no label is input, an alert box pops up making it required before continuing
+		if (document.getElementById('label'+curTrial).value == "") {
+			alert("please label the image!");
+    		return false;
+		}
+		// if no weight is input, an alert box pops up making it required before continuing
+		if (document.getElementById('weight'+curTrial).value == "") {
+			alert("please estimate the weight!");
+    		return false;
+		}
+		
+		// if any option was selected for the unit of weight measurement, update the hidden variable (wb_sel) to indicate which one 
+		if (isChecked('wb'+curTrial+'_lb') || isChecked('wb'+curTrial+'_oz') || isChecked('wb'+curTrial+'_g')) {
+			if (isChecked('wb'+curTrial+'_lb')) {
+				$('#wb_sel'+curTrial).value = 'L' }			
+			else if (isChecked('wb'+curTrial+'_oz')) {
+				$('#wb_sel'+curTrial).value = 'O' }
+			else if (isChecked('wb'+curTrial+'_g')) {
+				$('#wb_sel'+curTrial).value = 'G' }
+				
+		// otherwise, throw an alert again to make selection of one required 
+		} else { alert("please select pounds, ounces, or grams!");
+    		return false;
+    	}
+		
+		// when all of the above conditions are met, hide the trial, makes sure still in full-screen, and show the next trial (or submit button if all trials done)
+		$('#trial' + curTrial).hide();
+		openFullscreen()
+		curTrial++;
+		if (curTrial > nTrials) { // IF WE HAVE GONE THROUGH ALL OF THE TRIALS IN PART 2 OF THE EXPERIMENT... 
+		 // ..THEN WE ARE DONE WITH THE EXPERIMENT - LET'S CALL THE FUNCTION TO CLOSE IT OUT
+			experimentDone()
+		} else { 
+			showImage(curTrial);
+		}
+	}
+	
+	function generateUUID() { // Public Domain/MIT
+		var d = new Date().getTime();//Timestamp
+		var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = Math.random() * 16;//random number between 0 and 16
+			if(d > 0){//Use timestamp until depleted
+				r = (d + r)%16 | 0;
+				d = Math.floor(d/16);
+			} else {//Use microseconds since page-load if supported
+				r = (d2 + r)%16 | 0;
+				d2 = Math.floor(d2/16);
+			}
+			return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+		});
+	}
+
+
+	UID = generateUUID();
+	
+	
+	document.getElementById('actual_turker_unique_sequence').innerHTML = UID;
+
+	function experimentDone() {
+		console.log('experimentDone called');
+		// run output stuff here too!!! 
+		saveToFirebase();
+		
+		$('#turker_unique_sequence_page').show();
+		
+	}
+	
+	// initialize the arrays to create our saved structures for both experiment parts 
+	var dragtrials_struct = new Array();
+	var labeltrials_struct = new Array();
+		
+    function create_trialStructs() {
+		console.log('create_trialStructs called');
+	
+		// substructure for drag and drop trials 
+		for (i = 1; i < n_images; i++) {
+			var im_pos = document.getElementById('finalX_dragitem' + i).value;
+			var im_name = document.getElementById('drag_actualIM' + i).value;
+			dragtrials_struct.push({
+			  'drag_trial_N': i,
+			  'image_final_Xposiiton': im_pos,
+			  'image_identity': im_name,
+			});
+		}
+		
+		// substructure for label and guess trials 
+		for (i = 1; i < nTrials; i++) {
+			
+			var unit_selected = document.getElementById('#wb_sel'+i).value;
+			var weight_estimate = document.getElementById('weight'+i).value;
+			var object_label = document.getElementById('label'+i).value;
+			
+			labeltrials_struct.push({
+				'label_trial_N': i,
+				'object_weight_estimate': weight_estimate,
+				'object_weight_unit': unit_selected, 
+				'object_label': object_label,
+			})
+			}
+	}
+	
+	
+	
+	 // Your web app's Firebase configuration
+	  var firebaseConfig = {
+	    apiKey: "AIzaSyBNT_0vSFq-UPNKW52fQiVwk8s08XjLCt8",
+	    authDomain: "mturk-external-demo.firebaseapp.com",
+	    databaseURL: "https://mturk-external-demo-default-rtdb.firebaseio.com",
+	    projectId: "mturk-external-demo",
+	    storageBucket: "mturk-external-demo.appspot.com",
+	    messagingSenderId: "567173866350",
+	    appId: "1:567173866350:web:f4cd764a8933f11958977f"
+	  };
+	  // Initialize Firebase
+	  firebase.initializeApp(firebaseConfig);
+	
+	
+	
+	
+	// save to firebase 
+
+	function saveToFirebase() {
+		create_trialStructs()
+		console.log('saveToFirebase called');
+		var totalTime = (new Date()) - startExptTime;
+		var day = new Date();
+		var d = {
+		// everything inside this variable 'd' is optional to include! you can add whatever you want, 
+			// including arrays, structures, strings, numbers, etc
+			"UID": UID,
+			"curTime": day.toString(),
+			"userAgent": navigator.userAgent,
+			"windowWidth": $(window).width(),
+			"windowHeight": $(window).height(),
+			"screenWidth": screen.width,
+			"screenHeight": screen.height,   
+			"totalTime": totalTime.toString(),
+			"dragtrials_struct": dragtrials_struct, 
+			"labeltrials_struct": labeltrials_struct, 
+		};
+
+		// this part actually pushes the data to the database into a master structure called 'data_outputs' 
+		firebase.database().ref('data_outputs').push().set(d)
+	 
+	}
+
+
+	
+	
+	
+
+	// jquery used to call some main functions when buttons are clicked 
+	$('#startExperiment_dragrate').click(startDragRate); // line 368: when user clicks button to start the dragrate task, it runs the function that does that 
+	$('.endDragRate').click(showInstructions_label); // line 441: ends drag rate task and starts instructions for labeling task when the "Done!" button is clicked in drag-rate 
+	$('#startExperiment_label').click(showFirstTrial); // line 697: when the user clicks button to start the labeling task, it runs the function showFirstTrial
+	$('.continueButton').click(continuePressed); // line 700: button to continue is pressed on a trial of the labeling task
+	
+
+</script>
+
