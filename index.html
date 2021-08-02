@@ -695,7 +695,7 @@ function isMobileTablet(){
 		for (i = 1; i < nTrials+1; i++) {
 		j = all_i[i-1];
 		document.getElementById('im'+i).src = path+j+'.png';
-		$('#label_actualIM'+i).value = j;
+		document.getElementById('label_actualIM'+i).value = j;
 		document.getElementById('im'+i).height = window.picSize;
 		document.getElementById('im'+i).width = window.picSize;
 
@@ -744,11 +744,11 @@ function isMobileTablet(){
 		// if any option was selected for the unit of weight measurement, update the hidden variable (wb_sel) to indicate which one 
 		if (isChecked('wb'+curTrial+'_lb') || isChecked('wb'+curTrial+'_oz') || isChecked('wb'+curTrial+'_g')) {
 			if (isChecked('wb'+curTrial+'_lb')) {
-				$('#wb_sel'+curTrial).value = 'L' }			
+				document.getElementById('wb_sel'+curTrial).value = 'L' }			
 			else if (isChecked('wb'+curTrial+'_oz')) {
-				$('#wb_sel'+curTrial).value = 'O' }
+				document.getElementById('wb_sel'+curTrial).value = 'O' }
 			else if (isChecked('wb'+curTrial+'_g')) {
-				$('#wb_sel'+curTrial).value = 'G' }
+				document.getElementById('wb_sel'+curTrial).value = 'G' }
 				
 		// otherwise, throw an alert again to make selection of one required 
 		} else { alert("please select pounds, ounces, or grams!");
