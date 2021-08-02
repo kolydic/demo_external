@@ -411,7 +411,7 @@ function isMobileTablet(){
 		for (i = 1; i < n_images+1; i++) {
 		j = all_ims[i-1];
 		document.getElementById('dragitem'+i).src = path+j+'.png';
-		$('#drag_actualIM'+i).value = j;
+		document.getElementById('drag_actualIM'+i).value = j;
 		}
 	}
 
