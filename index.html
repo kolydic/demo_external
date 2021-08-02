@@ -823,12 +823,15 @@ function isMobileTablet(){
 			var unit_selected = document.getElementById('wb_sel'+i).value;
 			var weight_estimate = document.getElementById('weight'+i).value;
 			var object_label = document.getElementById('label'+i).value;
+			var label_im_name = document.getElementById('label_actualIM'+i).value;
 			
 			labeltrials_struct.push({
 				'label_trial_N': i,
 				'object_weight_estimate': weight_estimate,
 				'object_weight_unit': unit_selected, 
 				'object_label': object_label,
+				'image_identity': label_im_name,
+				
 			})
 			}
 	}
